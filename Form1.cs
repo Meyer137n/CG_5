@@ -22,26 +22,116 @@ namespace ComputerGraphics_Filters
             InitializeComponent();
         }
 
+        private int[] CalculateBrightnessHistogram(Bitmap image)
+        {
+            int[] histogram = new int[256]; // Массив для хранения частот яркости (от 0 до 255)
+
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    Color pixelColor = image.GetPixel(x, y);
+
+                    // Рассчитываем интенсивность (яркость) пикселя
+                    int brightness = (int)(0.36 * pixelColor.R + 0.53 * pixelColor.G + 0.11 * pixelColor.B);
+
+                    histogram[brightness]++; // Увеличиваем частоту соответствующей яркости
+                }
+            }
+
+            return histogram;
+        }
+
+        private void DrawHistogram(int[] histogram, PictureBox pictureBox)
+        {
+            int width = 256 + 55; // Ширина гистограммы с учётом разметки
+            int height = 540; // Полная высота для отображения гистограммы
+            int paddingTop = 10; // Отступ сверху
+            int paddingBottom = 10; // Отступ снизу
+
+            Bitmap histogramBitmap = new Bitmap(width, height);
+            int totalPixels = histogram.Sum(); // Общее количество пикселей
+
+            // Преобразуем значения в проценты
+            double[] percentages = histogram.Select(value => (double)value / totalPixels * 100).ToArray();
+
+            using (Graphics g = Graphics.FromImage(histogramBitmap))
+            {
+                g.Clear(Color.White); // Заливаем фон белым цветом
+
+                // Рисуем шкалу оси Y
+                int numberOfTicks = 10; // Количество отметок на оси Y
+                Font font = new Font("Arial", 10); // Шрифт для текста
+                Brush brush = Brushes.Black;
+                Pen pen = new Pen(Color.Gray, 1);
+                for (int i = 0; i <= numberOfTicks; i++)
+                {
+                    int y = height - paddingBottom - (i * (height - paddingTop - paddingBottom) / numberOfTicks);
+                    int labelValue = i * 10; // Шаг в процентах (0, 20, 40, ..., 100)
+
+                    // Линия шкалы
+                    g.DrawLine(pen, 45, y, width - 10, y);
+
+                    // Текстовая разметка
+                    g.DrawString(labelValue.ToString() + "%", font, brush, 5, y - 7);
+                }
+
+                // Рисуем столбцы гистограммы
+                for (int i = 0; i < percentages.Length; i++)
+                {
+                    int barHeight = (int)(percentages[i] / 100 * (height - paddingTop - paddingBottom)); // Нормализуем высоту столбцов
+                    int barTop = height - paddingBottom - barHeight; // Верхняя точка столбца
+                    g.DrawLine(Pens.Black, i + 45, height - paddingBottom, i + 45, barTop); // Столбец от нижней границы вверх
+                }
+            }
+
+            pictureBox.Image = histogramBitmap; // Отображаем гистограмму
+            pictureBox.Refresh();
+        }
+
+
+        private void UpdateHistogram()
+        {
+            if (image != null)
+            {
+                int[] histogram = CalculateBrightnessHistogram(image); // Вычисляем гистограмму
+                DrawHistogram(histogram, pictureBox2); // Отображаем её в PictureBox
+            }
+            else
+            {
+                MessageBox.Show("Сначала загрузите изображение!");
+            }
+        }
+
+
         // Файл
 
         private void Open_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openFileDialog1.Title = "Открытие исходного изображения:";
+            openFileDialog1.Title = "Выбор исходного изображения:";
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 previous_image = image;
                 image = new Bitmap(openFileDialog1.FileName);
                 pictureBox1.Image = image;
                 pictureBox1.Refresh();
+                UpdateHistogram(); // Обновляем гистограмму
             }
         }
 
         private void Save_as_ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.Title = "Сохранение результата:";
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            if (image != null)
             {
-                image.Save(saveFileDialog1.FileName);
+                saveFileDialog1.Title = "Сохранение результата:";
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    image.Save(saveFileDialog1.FileName);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Сначала загрузите изображение!");
             }
         }
 
@@ -59,6 +149,7 @@ namespace ComputerGraphics_Filters
             image = previous_image;
             pictureBox1.Image = image;
             pictureBox1.Refresh();
+            UpdateHistogram(); // Обновляем гистограмму
         }
 
         private void Repeat_ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -70,14 +161,21 @@ namespace ComputerGraphics_Filters
 
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            //Bitmap resultImage = ((Filter)e.Argument).processImage(image, backgroundWorker1);
-            Bitmap resultImage = ((Filter)e.Argument).processImage(new Bitmap(image), backgroundWorker1);
-
-            if (!backgroundWorker1.CancellationPending)
+            if (image != null)
             {
-                previous_image = image;
-                lastFilter = (Filter)e.Argument;
-                image = resultImage;
+                //Bitmap resultImage = ((Filter)e.Argument).processImage(image, backgroundWorker1);
+                Bitmap resultImage = ((Filter)e.Argument).processImage(new Bitmap(image), backgroundWorker1);
+
+                if (!backgroundWorker1.CancellationPending)
+                {
+                    previous_image = image;
+                    lastFilter = (Filter)e.Argument;
+                    image = resultImage;
+                }
+            }
+            else
+            {
+                MessageBox.Show("Сначала загрузите изображение!");
             }
         }
 
@@ -92,6 +190,7 @@ namespace ComputerGraphics_Filters
             {
                 pictureBox1.Image = image;
                 pictureBox1.Refresh();
+                UpdateHistogram(); // Обновляем гистограмму
             }
             progressBar1.Value = 0;
         }
