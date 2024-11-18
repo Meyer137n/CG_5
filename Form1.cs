@@ -33,7 +33,7 @@ namespace ComputerGraphics_Filters
                     Color pixelColor = image.GetPixel(x, y);
 
                     // Рассчитываем интенсивность (яркость) пикселя
-                    int brightness = (int)(0.36 * pixelColor.R + 0.53 * pixelColor.G + 0.11 * pixelColor.B);
+                    int brightness = (int)(0.299 * pixelColor.R + 0.5876 * pixelColor.G + 0.114 * pixelColor.B);
 
                     histogram[brightness]++; // Увеличиваем частоту соответствующей яркости
                 }
@@ -60,14 +60,14 @@ namespace ComputerGraphics_Filters
                 g.Clear(Color.White); // Заливаем фон белым цветом
 
                 // Рисуем шкалу оси Y
-                int numberOfTicks = 10; // Количество отметок на оси Y
+                int numberOfTicks = 20; // Количество отметок на оси Y
                 Font font = new Font("Arial", 10); // Шрифт для текста
                 Brush brush = Brushes.Black;
                 Pen pen = new Pen(Color.Gray, 1);
                 for (int i = 0; i <= numberOfTicks; i++)
                 {
                     int y = height - paddingBottom - (i * (height - paddingTop - paddingBottom) / numberOfTicks);
-                    int labelValue = i * 10; // Шаг в процентах (0, 20, 40, ..., 100)
+                    int labelValue = i * 5; // Шаг в процентах (0, 20, 40, ..., 100)
 
                     // Линия шкалы
                     g.DrawLine(pen, 45, y, width - 10, y);
@@ -163,8 +163,8 @@ namespace ComputerGraphics_Filters
         {
             if (image != null)
             {
-                //Bitmap resultImage = ((Filter)e.Argument).processImage(image, backgroundWorker1);
-                Bitmap resultImage = ((Filter)e.Argument).processImage(new Bitmap(image), backgroundWorker1);
+                Bitmap resultImage = ((Filter)e.Argument).processImage(image, backgroundWorker1);
+               // Bitmap resultImage = ((Filter)e.Argument).processImage(new Bitmap(image), backgroundWorker1);
 
                 if (!backgroundWorker1.CancellationPending)
                 {

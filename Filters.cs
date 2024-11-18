@@ -54,7 +54,7 @@ namespace ComputerGraphics_Filters
         protected override Color calculateNewPixelColor(Bitmap sourceImage, int x, int y)
         {
             Color sourceColor = sourceImage.GetPixel(x, y);
-            int Intensity = (int)(0.36 * sourceColor.R + 0.53 * sourceColor.G + 0.11 * sourceColor.B);
+            int Intensity = (int)(0.299 * sourceColor.R + 0.5876 * sourceColor.G + 0.114 * sourceColor.B);
             Intensity = Clamp(Intensity, 0, 255);
             return Color.FromArgb(Intensity, Intensity, Intensity);
         }
@@ -74,7 +74,7 @@ namespace ComputerGraphics_Filters
         Color sourceColor = sourceImage.GetPixel(x, y);
 
         // Рассчитываем интенсивность (яркость) пикселя
-        int intensity = (int)(0.36 * sourceColor.R + 0.53 * sourceColor.G + 0.11 * sourceColor.B);
+        int intensity = (int)(0.299 * sourceColor.R + 0.5876 * sourceColor.G + 0.114 * sourceColor.B);
 
         // Определяем, чёрный или белый пиксель
         int binaryColor = intensity >= threshold ? 255 : 0;

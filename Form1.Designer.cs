@@ -141,7 +141,7 @@ namespace ComputerGraphics_Filters
             // 
             this.invert_ToolStripMenuItem.Name = "invert_ToolStripMenuItem";
             this.invert_ToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
-            this.invert_ToolStripMenuItem.Text = "Инверсия";
+            this.invert_ToolStripMenuItem.Text = "Негатив";
             this.invert_ToolStripMenuItem.Click += new System.EventHandler(this.Inverse_ToolStripMenuItem_Click);
             // 
             // grayScale_ToolStripMenuItem
